@@ -188,4 +188,91 @@ describe('My First Tests', () => {
         cy.wrap(input).invoke('prop', 'value').should('contain', dateAssert);
       });
   });
+
+  it('Lists and dropdown', () => {
+    cy.visit('/');
+    // 1
+    // cy.get('nav nb-select').click();
+    // cy.get('.options-list').contains('Dark').click();
+    // cy.get('nav nb-select').should('contain', 'Dark');
+    // cy.get('nb-layout-header nav').should(
+    // 'have.css',
+    // 'background-color',
+    // 'rgb(34, 43, 69)',
+    // );
+
+    //2
+    cy.get('nav nb-select').then((dropdown) => {
+      cy.wrap(dropdown).click();
+      cy.get('.options-list nb-option').each((item, index) => {
+        const itemText = item.text().trim();
+        const colors = {
+          Light: 'rgb(255, 255, 255)',
+          Dark: 'rgb(34, 43, 69)',
+          Cosmic: 'rgb(50, 50, 89)',
+          Corporate: 'rgb(255, 255, 255)',
+        };
+
+        cy.wrap(item).click();
+        cy.wrap(dropdown).should('contain', itemText);
+        cy.get('nb-layout-header nav').should(
+          'have.css',
+          'background-color',
+          colors[itemText],
+        );
+        if (index < 3) {
+          cy.wrap(dropdown).click();
+        }
+      });
+    });
+  });
+
+  it.only('Web tables', () => {
+    cy.visit('/');
+    cy.contains('Tables & Data').click();
+    cy.contains('Smart Table').click();
+
+    //1
+    cy.get('tbody')
+      .contains('tr', 'Larry')
+      .then((tableRow) => {
+        cy.wrap(tableRow).find('.nb-edit').click();
+        cy.wrap(tableRow).find('[placeholder="Age"]').clear().type('25');
+        cy.wrap(tableRow).find('.nb-checkmark').click();
+        cy.wrap(tableRow).find('td').eq(6).should('contain', '25');
+      });
+
+    // 2
+    cy.get('thead').find('.nb-plus').click();
+    cy.get('thead')
+      .find('tr')
+      .eq(2)
+      .then((addRow) => {
+        cy.wrap(addRow).find('[placeholder="First Name"]').type('Eu');
+        cy.wrap(addRow).find('[placeholder="Last Name"]').type('Tu');
+        cy.wrap(addRow).find('.nb-checkmark').click();
+      });
+    cy.get('tbody tr')
+      .first()
+      .find('td')
+      .then((tableColums) => {
+        cy.wrap(tableColums).eq(2).should('contain', 'Eu');
+        cy.wrap(tableColums).eq(3).should('contain', 'Tu');
+      });
+
+    // 3
+    const age = [20, 30, 40, 66];
+
+    cy.wrap(age).each((age) => {
+      cy.get('thead [placeholder="Age"]').clear().type(age);
+      cy.wait(500);
+      cy.get('tbody tr').each((row) => {
+        if (age == 66) {
+          cy.wrap(row).should('contain', 'No data found');
+        } else {
+          cy.wrap(row).find('td').eq(6).should('contain', age);
+        }
+      });
+    });
+  });
 });
